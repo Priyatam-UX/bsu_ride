@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BSU RideTogether</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #e10088;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 0.2em;
+    }
+
+    h2 {
+      font-size: 1.5em;
+      margin-bottom: 1em;
+    }
+
+    .user-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .user-info span {
+      font-size: 1.1em;
+    }
+
+    .user-info button {
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .input-box {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1em;
+    }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .option-card {
+      background-color: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 15px;
+      width: 150px;
+      text-align: center;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    .option-card img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .option-card button {
+      margin-top: 10px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 1.2em;
+    }
+
+    #mapModal, #confirmationModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: none;
+      margin-bottom: 10px;
+    }
+
+    /* Updated Ride History Styles */
+    .ride-history {
+      width: 100%;
+      max-width: 700px;
+      margin-top: 40px;
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #333;
+      border-radius: 20px;
+      padding: 25px 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .ride-history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .ride-history-header h3 {
+      font-size: 1.8em;
+      color: #e10088;
+    }
+
+    .ride-history button {
+      background-color: #e10088;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: background-color 0.3s ease;
+    }
+
+    .ride-history button:hover {
+      background-color: #c0006e;
+    }
+
+    .ride-card {
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 15px;
+      background-color: #fff;
+      border-left: 5px solid #e10088;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease;
+    }
+
+    .ride-card:hover {
+      transform: scale(1.02);
+    }
+
+    .ride-card h4 {
+      margin-bottom: 8px;
+      font-size: 1.2em;
+      color: #000;
+    }
+
+    .ride-card p {
+      margin: 4px 0;
+      color: #555;
+    }
+
+    .ride-status {
+      font-size: 0.9em;
+      font-weight: bold;
+      color: green;
+      margin-top: 5px;
+    }
+
+    .track-button {
+      background-color: #e10088;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 0.9em;
+      transition: background-color 0.3s ease;
+    }
+
+    .track-button:hover {
+      background-color: #c0006e;
+    }
+  </style>
+</head>
+<body>
+  <h1>BSU</h1>
+  <h2>RideTogether</h2>
+
+  <div class="user-info">
+    <span id="welcomeMessage">Welcome, Guest!</span>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="input-box">
+    <label for="pickup">Pickup:</label>
+    <select id="pickup">
+      <option value="">Select Pickup</option>
+      <option value="Times Square, New York, NY">Times Square</option>
+      <option value="Hollywood, Los Angeles, CA">Hollywood</option>
+      <option value="Millennium Park, Chicago, IL">Millennium Park</option>
+    </select>
+  </div>
+
+  <div class="input-box">
+    <label for="destination">Destination:</label>
+    <select id="destination">
+      <option value="">Select Destination</option>
+      <option value="Central Park, New York, NY">Central Park</option>
+      <option value="Santa Monica Pier, Los Angeles, CA">Santa Monica Pier</option>
+      <option value="Navy Pier, Chicago, IL">Navy Pier</option>
+    </select>
+  </div>
+
+  <div class="options">
+    <div class="option-card" onclick="confirmRide()">
+      <img src="https://img.icons8.com/ios-filled/100/car.png" alt="Get a ride" />
+      <div>Get a ride</div>
+      <button>&rarr;</button>
+    </div>
+    <div class="option-card" onclick="showTracking()">
+      <img src="https://img.icons8.com/ios-filled/100/marker.png" alt="Tracking location" />
+      <div>Tracking location</div>
+      <button>&rarr;</button>
+    </div>
+  </div>
+
+  <div id="confirmationModal">
+    <div class="modal-content">
+      <h3>Confirm Ride</h3>
+      <p>Do you want to proceed with booking this ride?</p>
+      <button onclick="proceedRide()">Continue</button>
+      <button onclick="closeConfirmation()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="mapModal">
+    <div class="modal-content">
+      <h3>Ride Details</h3>
+      <iframe id="mapFrame" allowfullscreen></iframe>
+      <p><strong>Pickup:</strong> <span id="pickupText"></span></p>
+      <p><strong>Destination:</strong> <span id="destinationText"></span></p>
+      <p><strong>Price:</strong> $<span id="price"></span></p>
+      <button onclick="closeMap()">Close</button>
+    </div>
+  </div>
+
+  <div class="ride-history">
+    <div class="ride-history-header">
+      <h3>Ride Logs</h3>
+      <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    <div id="rideLogContainer"></div>
+  </div>
+
+  <script>
+    let pickup = "";
+    let destination = "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const userName = localStorage.getItem("userName") || "Guest";
+      document.getElementById("welcomeMessage").textContent = `Welcome, ${userName}!`;
+    });
+
+    function logout() {
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.href = "login3.html";
+    }
+
+    function calculatePrice(p, d) {
+      if (!p || !d || p === d) return 0;
+      return (Math.random() * 30 + 10).toFixed(2);
+    }
+
+    function confirmRide() {
+      pickup = document.getElementById('pickup').value;
+      destination = document.getElementById('destination').value;
+      if (!pickup || !destination) {
+        alert("Please select both pickup and destination.");
+        return;
+      }
+      document.getElementById('confirmationModal').style.display = 'flex';
+    }
+
+    function closeConfirmation() {
+      document.getElementById('confirmationModal').style.display = 'none';
+    }
+
+    function proceedRide() {
+      document.getElementById('confirmationModal').style.display = 'none';
+      const price = calculatePrice(pickup, destination);
+      showMap();
+      logRideToHistory(pickup, destination, price);
+    }
+
+    function showMap() {
+      const key = "AIzaSyASGgwSw3olbn6qdlHyuXHPIAoQaOJGIKA";
+      const url = `https://www.google.com/maps/embed/v1/directions?key=${key}&origin=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(destination)}`;
+      document.getElementById('mapFrame').src = url;
+      document.getElementById('pickupText').textContent = pickup;
+      document.getElementById('destinationText').textContent = destination;
+      document.getElementById('price').textContent = calculatePrice(pickup, destination);
+      document.getElementById('mapModal').style.display = 'flex';
+    }
+
+    function closeMap() {
+      document.getElementById('mapModal').style.display = 'none';
+    }
+
+    function showTracking() {
+      if (!pickup || !destination) {
+        alert("No ride in progress.");
+        return;
+      }
+      alert("Tracking your current ride: " + pickup + " to " + destination);
+    }
+
+    function logRideToHistory(p, d, price) {
+      const container = document.getElementById("rideLogContainer");
+      const card = document.createElement("div");
+      card.className = "ride-card";
+
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+
+      card.innerHTML = `
+        <h4>📍 ${p} → 🏁 ${d}</h4>
+        <p>Date: ${dateStr}</p>
+        <p>Price: $${price}</p>
+        <p class="ride-status">Status: Completed</p>
+        <button class="track-button" onclick="trackRide('${p}', '${d}')">Track</button>
+      `;
+
+      const existingCards = container.querySelectorAll('.ride-card');
+      if (existingCards.length >= 3) {
+        container.removeChild(existingCards[existingCards.length - 1]);
+      }
+      container.insertBefore(card, container.firstChild);
+    }
+
+    function trackRide(p, d) {
+      alert(`Tracking your ride from ${p} to ${d}`);
+    }
+
+    function clearLogs() {
+      document.getElementById("rideLogContainer").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
